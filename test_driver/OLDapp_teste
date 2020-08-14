@@ -1,0 +1,41 @@
+import 'package:flutter_driver/flutter_driver.dart';
+import 'package:ozzie/ozzie.dart';
+import 'package:test/test.dart';
+
+void main() {
+  final textFinder = find.byValueKey('generated_password');
+  final buttonFinder = find.byValueKey('generate');
+  final sliderFinder = find.byValueKey('slider');
+  FlutterDriver driver;
+  Ozzie ozzie;
+
+  group('Generate Password App', () {
+    setUpAll(() async {
+      driver = await FlutterDriver.connect();
+      ozzie = Ozzie.initWith(driver, groupName: 'password_generator');
+    });
+
+    tearDownAll(() async {
+      if (driver != null) {
+        driver.close();
+      }
+      ozzie.generateHtmlReport();
+    });
+
+    test('start with password text empty', () async {
+      await ozzie.profilePerformance("password_generator1", () async {
+        expect(await driver.getText(textFinder), '');
+        await ozzie.takeScreenshot('initial_password_is_empty');
+      });
+    });
+
+    test('generates a random password when taps on button', () async {
+      await ozzie.profilePerformance("password_generator2", () async {
+        await driver.tap(buttonFinder);
+
+        expect(await driver.getText(textFinder), isNot(equals('')));
+        await ozzie.takeScreenshot('password_is_note_empty');
+      });
+    });
+  });
+}

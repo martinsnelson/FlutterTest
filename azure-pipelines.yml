@@ -1,0 +1,34 @@
+variables:
+  projectDirectory: '.'
+  keypassword: 'Mechtrial@5'
+  key: 'partnership'
+  
+trigger:
+- masterazure
+jobs:
+  - job: Android
+    pool:
+      vmImage: 'macOS-latest'
+    steps:
+    - task: FlutterInstall@0
+      inputs:
+        channel: 'stable'
+        version: 'latest'
+        customVersion: 'v1.12.13+hotfix.7'
+    - task: FlutterBuild@0
+      inputs:
+        target: 'apk'
+        projectDirectory: $(projectDirectory)
+        apkTargetPlatform: android-arm64
+    - task: AndroidSigning@3
+      inputs:
+        apkFiles: '**/*.apk'
+        apksignerKeystoreFile: 'partnership.keystore'
+        apksignerKeystorePassword: '$(keypassword)'
+        apksignerKeystoreAlias: '$(key)'
+        apksignerKeyPassword: '$(keypassword)'
+    - task: CopyFiles@2
+      inputs:
+        contents: '**/*.apk'
+        targetFolder: '$(build.artifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
